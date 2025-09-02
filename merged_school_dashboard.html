@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Infrastructure Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+        
+        .wide-chart {
+            grid-column: 1 / -1;
+        }
+        
+        .district-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-group select:hover {
+            border-color: #3498db;
+        }
+        
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .school-details-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            color: #2c3e50;
+        }
+        
+        .school-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .school-header {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .school-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .school-commune {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        
+        .needs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .need-category {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .need-category h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .need-item {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .district-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .district-card {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(9, 132, 227, 0.3);
+        }
+        
+        .district-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .district-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 15px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>School Infrastructure Dashboard</h1>
+            <p>Analysis of 58 schools across 5 communes</p>
+            <h2 style="font-size: 1.8rem; margin-top: 15px; color: #ecf0f1; font-weight: 300;">Chtouka Ait Baha</h2>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">58</div>
+                <div class="stat-label">Total Schools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">31,210</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">509</div>
+                <div class="stat-label">Total Classrooms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">538</div>
+                <div class="stat-label">Avg Students/School</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Students Distribution by Commune</div>
+                <div class="chart-wrapper">
+                    <canvas id="studentsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Schools Count by Commune</div>
+                <div class="chart-wrapper">
+                    <canvas id="schoolsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container wide-chart">
+                <div class="chart-title">Infrastructure Comparison by Commune</div>
+                <div class="chart-wrapper">
+                    <canvas id="infrastructureChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Technology Equipment Distribution</div>
+                <div class="chart-wrapper">
+                    <canvas id="technologyChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Highest Need Items</div>
+                <div class="chart-wrapper">
+                    <canvas id="highNeedChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Lowest Need Items</div>
+                <div class="chart-wrapper">
+                    <canvas id="lowNeedChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Additional Needs Analysis (From School Notes)</div>
+                <div class="chart-wrapper">
+                    <canvas id="additionalNeedsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="district-section">
+            <div class="section-title">Interactive School Explorer</div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="communeSelect">Select Commune:</label>
+                    <select id="communeSelect">
+                        <option value="">All Communes</option>
+                        <option value="Ait Amira">Ait Amira (15 schools)</option>
+                        <option value="Inchaden">Inchaden (6 schools)</option>
+                        <option value="Belfaa">Belfaa (8 schools)</option>
+                        <option value="Sidi Bibi">Sidi Bibi (14 schools)</option>
+                        <option value="Ouad Essafa">Ouad Essafa (15 schools)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="schoolSelect">Select School:</label>
+                    <select id="schoolSelect">
+                        <option value="">Choose a commune first</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="categorySelect">Filter by Category:</label>
+                    <select id="categorySelect">
+                        <option value="">All Categories</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="technology">Technology</option>
+                        <option value="accessibility">Accessibility</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="equipment">Equipment</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="schoolDetails" class="school-details-container">
+                <p>Select a commune and school to view detailed information, or choose a category to view comprehensive statistics across all schools</p>
+            </div>
+        </div>
+        
+        <div class="district-section">
+            <div class="section-title">Socio-Economic Context</div>
+            <p style="color: #000000; font-size: 1rem; line-height: 1.6; margin-bottom: 15px;">
+                The schools analyzed in this dashboard operate within challenging socio-economic environments that significantly impact educational delivery. Many of these institutions serve rural and semi-rural communities in Chtouka Ait Baha, where economic hardship and geographic isolation create complex educational challenges.
+            </p>
+            <p style="color: #000000; font-size: 1rem; line-height: 1.6; margin-bottom: 15px;">
+                Several schools report operating in areas with high agricultural activity that attract migrant workers from across Morocco and sub-Saharan Africa, creating diverse student populations with varying educational background and language needs. The proximity to agricultural zones means many families depend on seasonal work, leading to student mobility issues and interrupted learning patterns.
+            </p>
+            <p style="color: #000000; font-size: 1rem; line-height: 1.6; margin-bottom: 15px;">
+                Infrastructure challenges reflect broader regional development gaps. Many schools lack reliable water connections, with some dependent on local associations for water supply. Basic connectivity issues, including inadequate internet access and poor road conditions, further isolate these educational communities from broader support networks and resources.
+            </p>
+            <p style="color: #000000; font-size: 1rem; line-height: 1.6;">
+                Despite these challenges, school administrators demonstrate remarkable resilience and innovation, often finding creative solutions to space constraints and resource limitations. The data reveals a strong commitment to inclusive education, with increasing attention to accessibility needs and special education requirements, reflecting the communities' determination to provide quality education for all children regardless of economic circumstances.
+            </p>
+        </div>
+        
+        <div class="district-section">
+            <div class="section-title">Communes Overview</div>
+            <div class="district-cards" id="communeCards">
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>School Infrastructure Analysis | Based on Real School_Data</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; font-weight: bold;">Powered By Cherrat Issam</p>
+        </div>
+    </div>
+
+    <script>
+        const communesData = {
+            "Ait Amira": { schools: 15, students: 11935, classrooms: 150, projectors: 120, computers: 25 },
+            "Inchaden": { schools: 6, students: 2110, classrooms: 38, projectors: 35, computers: 8 },
+            "Belfaa": { schools: 8, students: 3576, classrooms: 61, projectors: 44, computers: 12 },
+            "Sidi Bibi": { schools: 14, students: 4951, classrooms: 98, projectors: 78, computers: 18 },
+            "Ouad Essafa": { schools: 15, students: 8638, classrooms: 162, projectors: 98, computers: 22 }
+        };
+
+        const allSchoolsData = {
+            "Ait Amira": [
+                { name: "Aghraiss", students: 850, classrooms: 12, principal: "Mr.", phone: "669595591" },
+                { name: "Collège Al Argane", students: 1200, classrooms: 13, principal: "Mr.", phone: "6" },
+                { name: "Collège 11 Janvier", students: 2800, classrooms: 0, principal: "Mr.", phone: "6" },
+                { name: "Imam Mouslim", students: 235, classrooms: 0 },
+                { name: "KHERBA SIDI TAYEB", students: 913, classrooms: 9 },
+                { name: "Al Houda (Centre)", students: 300, classrooms: 0 },
+                { name: "Al Houda (Annexe: Douar Demnat)", students: 500, classrooms: 2 },
+                { name: "Ghzala", students: 650, classrooms: 0 },
+                { name: "Ghzala 3", students: 200, classrooms: 0 },
+                { name: "Essoualem", students: 390, classrooms: 0 },
+                { name: "Ibn Al Haytham", students: 1120, classrooms: 17 },
+                { name: "Tin Addi (Centre)", students: 370, classrooms: 0 },
+                { name: "Tin Addi. Annexe Tin El Haj Mbarek", students: 220, classrooms: 0 },
+                { name: "Al Izdihar", students: 1948, classrooms: 18 },
+                { name: "Lycée Al Khawarizmi", students: 1900, classrooms: 47 }
+            ],
+            "Inchaden": [
+                { name: "G.S. Al Wifak - Annex Ait Lahcen", students: 160, classrooms: 1 },
+                { name: "G.S Tounef", students: 600, classrooms: 9 },
+                { name: "G.S. Tounef- Anex Ait Al Ayat", students: 231, classrooms: 3 },
+                { name: "Arba Ait Boutayeb", students: 569, classrooms: 7 },
+                { name: "G.S. Ait Boutayeb- Annex- Ifariane", students: 179, classrooms: 4 },
+                { name: "G.S Kouhaiz.- Annexe Ennouasser", students: 371, classrooms: 5 }
+            ],
+            "Belfaa": [
+                { name: "Imajad", students: 129, classrooms: 4 },
+                { name: "Immi N Taguenet", students: 120, classrooms: 6 },
+                { name: "Immi N Taguenet, Annexe Lksbate", students: 199, classrooms: 3 },
+                { name: "Ibno Aabbad", students: 312, classrooms: 0 },
+                { name: "Abdel Malek Essaadi", students: 1128, classrooms: 16 },
+                { name: "Collège Belfaa", students: 1104, classrooms: 13 },
+                { name: "Tin Ali Ouaadi. Annexe Oukhraib", students: 347, classrooms: 5 },
+                { name: "Tin Ali Ouaadi. Annexe Oukhraib 2", students: 237, classrooms: 4 }
+            ],
+            "Sidi Bibi": [
+                { name: "Ahmed Boukmakh", students: 1345, classrooms: 14 },
+                { name: "G.S Tadart", students: 1238, classrooms: 13 },
+                { name: "G.S Al Khansaa", students: 480, classrooms: 11 },
+                { name: "G.S Al Khansaa- Annexe Douar EL HAQ", students: 300, classrooms: 3 },
+                { name: "G.S Al Khansaa-Anexe- Ihchach", students: 400, classrooms: 5 },
+                { name: "G.S Al Khansaa-Anexe Ben Jarrar", students: 272, classrooms: 6 },
+                { name: "G.S- AL ALAOUIINE-Anexe EL KHARBA AIT MIMOUN", students: 140, classrooms: 4 },
+                { name: "G.S AL ALAOUIINE Anexe EL BRAYJ AYT MYMOUN", students: 132, classrooms: 3 },
+                { name: "G.S IBNO HAZM Annexe TIN ALI MANSOUR", students: 250, classrooms: 5 },
+                { name: "G.S TAKADE KABLIA - Annexe TAKADE SAHILIA", students: 280, classrooms: 7 },
+                { name: "G.S Ennahda", students: 400, classrooms: 7 },
+                { name: "Annexe Ennahda-", students: 457, classrooms: 8 },
+                { name: "G.S- AL ALAOUIINE", students: 175, classrooms: 0 },
+                { name: "G.S TADARTE Annexee ELKEBLA", students: 163, classrooms: 2 }
+            ],
+            "Ouad Essafa": [
+                { name: "Lycée Al Fadila", students: 2211, classrooms: 31 },
+                { name: "Collège Sidi Hadj Lhbib", students: 358, classrooms: 0 },
+                { name: "Sidi Ali Aouzal (centre)", students: 537, classrooms: 9, principal: "Mr. Youssef Joughaoui", phone: "660123656" },
+                { name: "Sidi Ali Aouzal, Annexe Ait Oumalya", students: 239, classrooms: 4, principal: "Mr. Youssef Joughaoui", phone: "660123656" },
+                { name: "Sidi Ali Aouzal, Annexe Touddouche", students: 478, classrooms: 6, principal: "Mr. Youssef Joughaoui", phone: "660123656" },
+                { name: "Erriaya", students: 1298, classrooms: 18, principal: "Mr. Ramdan Raiss", phone: "660123213" },
+                { name: "Alfath (centre) Ait Balla", students: 327, classrooms: 4, phone: "660123188" },
+                { name: "Alfath, Annexe Azmel", students: 400, classrooms: 4, phone: "660123188" },
+                { name: "Alfath, Annexe Ait Essaih", students: 467, classrooms: 6, phone: "660123188" },
+                { name: "Imzilen, Annexe Timlaline", students: 215, classrooms: 4, principal: "Mr. Driss Anchkar", phone: "669595085" },
+                { name: "Abdalla Ben Ali", students: 424, classrooms: 7, principal: "Abdellah Moustaid", phone: "666181031" },
+                { name: "Abdalla Ben Ali, Annexe Bouaalaga", students: 403, classrooms: 6, principal: "Abdellah Moustaid", phone: "666181031" },
+                { name: "Mohamed Khair Eddine, Annexe Tin Hammou", students: 325, classrooms: 7 },
+                { name: "Al Khadra Talberjt", students: 500, classrooms: 7 },
+                { name: "Assanabil", students: 600, classrooms: 0 }
+            ]
+        };
+
+        // Comprehensive data from CSV file for category analysis
+        const categoryData = {
+            infrastructure: {
+                title: "Infrastructure Category Statistics",
+                data: {
+                    "New Classrooms to Build": { total: 126, schools: 35, average: 3.6, max: 12, commune_breakdown: {"Ait Amira": 21, "Inchaden": 15, "Belfaa": 17, "Sidi Bibi": 40, "Ouad Essafa": 33} },
+                    "Multifunction Room": { total: 35, schools: 35, note: "All schools need multifunction rooms", commune_breakdown: {"Ait Amira": 8, "Inchaden": 6, "Belfaa": 8, "Sidi Bibi": 8, "Ouad Essafa": 5} },
+                    "Staff Room": { total: 32, schools: 32, note: "Staff rooms needed", commune_breakdown: {"Ait Amira": 7, "Inchaden": 5, "Belfaa": 7, "Sidi Bibi": 8, "Ouad Essafa": 5} },
+                    "New Administration Building": { total: 15, schools: 15, commune_breakdown: {"Ait Amira": 3, "Inchaden": 3, "Belfaa": 4, "Sidi Bibi": 2, "Ouad Essafa": 3} },
+                    "Wall Construction": { total_length: 2290, schools: 8, average_length: 286, commune_breakdown: {"Ait Amira": 0, "Inchaden": 0, "Belfaa": 90, "Sidi Bibi": 0, "Ouad Essafa": 2200} },
+                    "Preschool Rooms": { total: 25, schools: 17, commune_breakdown: {"Ait Amira": 5, "Inchaden": 3, "Belfaa": 2, "Sidi Bibi": 8, "Ouad Essafa": 7} }
+                }
+            },
+            technology: {
+                title: "Technology Equipment Statistics",
+                data: {
+                    "Projectors": { total: 375, schools: 55, average: 6.8, max: 29, commune_breakdown: {"Ait Amira": 120, "Inchaden": 35, "Belfaa": 44, "Sidi Bibi": 78, "Ouad Essafa": 98} },
+                    "Screens (72 inch)": { total: 310, schools: 52, average: 6.0, max: 29, commune_breakdown: {"Ait Amira": 95, "Inchaden": 28, "Belfaa": 35, "Sidi Bibi": 65, "Ouad Essafa": 87} },
+                    "Security Cameras": { total: 419, schools: 56, average: 7.5, max: 21, commune_breakdown: {"Ait Amira": 125, "Inchaden": 40, "Belfaa": 52, "Sidi Bibi": 88, "Ouad Essafa": 114} },
+                    "Computers": { total: 85, schools: 44, average: 1.9, max: 27, commune_breakdown: {"Ait Amira": 25, "Inchaden": 8, "Belfaa": 12, "Sidi Bibi": 18, "Ouad Essafa": 22} },
+                    "DVR": { total: 56, schools: 56, note: "Each school needs 1 DVR system", commune_breakdown: {"Ait Amira": 15, "Inchaden": 6, "Belfaa": 8, "Sidi Bibi": 14, "Ouad Essafa": 13} },
+                    "DVR Screens": { total: 56, schools: 56, commune_breakdown: {"Ait Amira": 15, "Inchaden": 6, "Belfaa": 8, "Sidi Bibi": 14, "Ouad Essafa": 13} }
+                }
+            },
+            accessibility: {
+                title: "Accessibility Infrastructure Statistics",
+                data: {
+                    "Wheelchair Ramps": { total: 47, schools: 47, note: "Most schools need ramps", commune_breakdown: {"Ait Amira": 12, "Inchaden": 6, "Belfaa": 7, "Sidi Bibi": 12, "Ouad Essafa": 10} },
+                    "Accessible Toilets for Disabled": { total: 35, schools: 35, commune_breakdown: {"Ait Amira": 9, "Inchaden": 4, "Belfaa": 6, "Sidi Bibi": 8, "Ouad Essafa": 8} },
+                    "Accessible Door Widening": { total: 23, schools: 23, commune_breakdown: {"Ait Amira": 6, "Inchaden": 3, "Belfaa": 4, "Sidi Bibi": 5, "Ouad Essafa": 5} },
+                    "Handrails Installation": { total: 18, schools: 18, commune_breakdown: {"Ait Amira": 5, "Inchaden": 2, "Belfaa": 3, "Sidi Bibi": 4, "Ouad Essafa": 4} },
+                    "Accessible Water Fountains": { total: 28, schools: 28, commune_breakdown: {"Ait Amira": 7, "Inchaden": 4, "Belfaa": 5, "Sidi Bibi": 6, "Ouad Essafa": 6} },
+                    "Special Education Room": { total: 12, schools: 12, note: "Increasing autism cases noted", commune_breakdown: {"Ait Amira": 3, "Inchaden": 2, "Belfaa": 2, "Sidi Bibi": 3, "Ouad Essafa": 2} }
+                }
+            },
+            maintenance: {
+                title: "Maintenance & Repairs Statistics",
+                data: {
+                    "Student Toilets to Restore": { total: 198, schools: 42, average: 4.7, max: 22, commune_breakdown: {"Ait Amira": 52, "Inchaden": 25, "Belfaa": 31, "Sidi Bibi": 48, "Ouad Essafa": 42} },
+                    "Teacher Toilets to Restore": { total: 89, schools: 38, average: 2.3, max: 8, commune_breakdown: {"Ait Amira": 23, "Inchaden": 12, "Belfaa": 15, "Sidi Bibi": 22, "Ouad Essafa": 17} },
+                    "Windows to Replace (Aluminum)": { total: 447, schools: 28, average: 16.0, max: 88, commune_breakdown: {"Ait Amira": 150, "Inchaden": 45, "Belfaa": 62, "Sidi Bibi": 95, "Ouad Essafa": 95} },
+                    "LED Lighting Restoration": { total: 156, schools: 35, average: 4.5, commune_breakdown: {"Ait Amira": 45, "Inchaden": 18, "Belfaa": 25, "Sidi Bibi": 38, "Ouad Essafa": 30} },
+                    "External Painting (Classrooms)": { total: 312, schools: 42, average: 7.4, commune_breakdown: {"Ait Amira": 95, "Inchaden": 35, "Belfaa": 48, "Sidi Bibi": 72, "Ouad Essafa": 62} },
+                    "Internal Painting (Classrooms)": { total: 298, schools: 40, average: 7.5, commune_breakdown: {"Ait Amira": 88, "Inchaden": 32, "Belfaa": 45, "Sidi Bibi": 68, "Ouad Essafa": 65} }
+                }
+            },
+            equipment: {
+                title: "Equipment & Supplies Statistics",
+                data: {
+                    "Administration Lockers": { total: 52, schools: 52, note: "All schools need lockers", commune_breakdown: {"Ait Amira": 14, "Inchaden": 6, "Belfaa": 8, "Sidi Bibi": 12, "Ouad Essafa": 12} },
+                    "Shelves": { total: 285, schools: 48, average: 5.9, commune_breakdown: {"Ait Amira": 85, "Inchaden": 32, "Belfaa": 48, "Sidi Bibi": 65, "Ouad Essafa": 55} },
+                    "Printers": { total: 58, schools: 58, note: "Each school needs printer", commune_breakdown: {"Ait Amira": 15, "Inchaden": 6, "Belfaa": 8, "Sidi Bibi": 14, "Ouad Essafa": 15} },
+                    "Student Tables/Desks": { total: 1890, schools: 35, average: 54.0, commune_breakdown: {"Ait Amira": 520, "Inchaden": 220, "Belfaa": 310, "Sidi Bibi": 485, "Ouad Essafa": 355} },
+                    "Desks for Staff": { total: 285, schools: 48, average: 5.9, commune_breakdown: {"Ait Amira": 88, "Inchaden": 32, "Belfaa": 48, "Sidi Bibi": 62, "Ouad Essafa": 55} },
+                    "Chairs for Staff": { total: 298, schools: 48, average: 6.2, commune_breakdown: {"Ait Amira": 92, "Inchaden": 34, "Belfaa": 50, "Sidi Bibi": 65, "Ouad Essafa": 57} },
+                    "Science Lab Equipment Sets": { total: 42, schools: 18, average: 2.3, commune_breakdown: {"Ait Amira": 12, "Inchaden": 5, "Belfaa": 8, "Sidi Bibi": 9, "Ouad Essafa": 8} }
+                }
+            }
+        };
+
+        // Detailed school data extracted from CSV
+        const detailedSchoolData = {
+            "Aghraiss": {
+                infrastructure: { newClassrooms: 2, multifunction: 1, staffRoom: 1, adminBuilding: 0, wallLength: 0, preschoolRooms: 2 },
+                technology: { projectors: 8, screens: 14, cameras: 12, computers: 1, dvr: 1, dvrScreens: 1 },
+                accessibility: { wheelchairRamps: 6, accessibleToilets: 1, doorWidening: 1, handrails: 0, waterFountains: 1, specialEd: 0 },
+                maintenance: { studentToilets: 8, teacherToilets: 4, windows: 28, lighting: 14, externalPainting: 14, internalPainting: 14 },
+                equipment: { lockers: 8, shelves: 8, printers: 1, studentDesks: 0, staffDesks: 0, chairs: 0, labEquipment: 0 }
+            },
+            "Collège Al Argane": {
+                infrastructure: { newClassrooms: 0, multifunction: 0, staffRoom: 0, adminBuilding: 0, wallLength: 0, preschoolRooms: 0 },
+                technology: { projectors: 10, screens: 15, cameras: 10, computers: 16, dvr: 1, dvrScreens: 1 },
+                accessibility: { wheelchairRamps: 0, accessibleToilets: 0, doorWidening: 0, handrails: 0, waterFountains: 0, specialEd: 0 },
+                maintenance: { studentToilets: 22, teacherToilets: 4, windows: 0, lighting: 13, externalPainting: 13, internalPainting: 13 },
+                equipment: { lockers: 0, shelves: 0, printers: 0, studentDesks: 0, staffDesks: 2, chairs: 2, labEquipment: 0 }
+            },
+            "Collège 11 Janvier": {
+                infrastructure: { newClassrooms: 0, multifunction: 1, staffRoom: 0, adminBuilding: 0, wallLength: 0, preschoolRooms: 0 },
+                technology: { projectors: 6, screens: 11, cameras: 13, computers: 30, dvr: 1, dvrScreens: 1 },
+                accessibility: { wheelchairRamps: 0, accessibleToilets: 0, doorWidening: 0, handrails: 0, waterFountains: 0, specialEd: 0 },
+                maintenance: { studentToilets: 18, teacherToilets: 0, windows: 10, lighting: 0, externalPainting: 30, internalPainting: 30 },
+                equipment: { lockers: 0, shelves: 0, printers: 0, studentDesks: 0, staffDesks: 2, chairs: 2, labEquipment: 0 }
+            },
+            "Lycée Al Khawarizmi": {
+                infrastructure: { newClassrooms: 1, multifunction: 0, staffRoom: 0, adminBuilding: 0, wallLength: 0, preschoolRooms: 7 },
+                technology: { projectors: 20, screens: 29, cameras: 21, computers: 27, dvr: 1, dvrScreens: 1 },
+                accessibility: { wheelchairRamps: 1, accessibleToilets: 0, doorWidening: 0, handrails: 0, waterFountains: 0, specialEd: 0 },
+                maintenance: { studentToilets: 8, teacherToilets: 5, windows: 31, lighting: 27, externalPainting: 28, internalPainting: 0 },
+                equipment: { lockers: 0, shelves: 0, printers: 0, studentDesks: 0, staffDesks: 0, chairs: 0, labEquipment: 4 }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createCharts();
+            displayCommuneCards();
+            setupEventListeners();
+        });
+
+        function createCharts() {
+            const communeNames = Object.keys(communesData);
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+
+            // Students Distribution Chart
+            const studentsCtx = document.getElementById('studentsChart');
+            if (studentsCtx) {
+                new Chart(studentsCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: communeNames,
+                        datasets: [{
+                            data: communeNames.map(commune => communesData[commune].students),
+                            backgroundColor: colors,
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Schools Count Chart
+            const schoolsCtx = document.getElementById('schoolsChart');
+            if (schoolsCtx) {
+                new Chart(schoolsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: communeNames,
+                        datasets: [{
+                            label: 'Number of Schools',
+                            data: communeNames.map(commune => communesData[commune].schools),
+                            backgroundColor: colors,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Infrastructure Comparison Chart
+            const infrastructureCtx = document.getElementById('infrastructureChart');
+            if (infrastructureCtx) {
+                new Chart(infrastructureCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: communeNames,
+                        datasets: [
+                            {
+                                label: 'Students',
+                                data: communeNames.map(commune => communesData[commune].students),
+                                backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Classrooms × 60',
+                                data: communeNames.map(commune => communesData[commune].classrooms * 60),
+                                backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                                yAxisID: 'y'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Technology Equipment Chart
+            const technologyCtx = document.getElementById('technologyChart');
+            if (technologyCtx) {
+                new Chart(technologyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: communeNames,
+                        datasets: [
+                            {
+                                label: 'Projectors',
+                                data: communeNames.map(commune => communesData[commune].projectors),
+                                backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                            },
+                            {
+                                label: 'Computers',
+                                data: communeNames.map(commune => communesData[commune].computers),
+                                backgroundColor: 'rgba(231, 76, 60, 0.8)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // High Need Items Chart
+            const highNeedCtx = document.getElementById('highNeedChart');
+            if (highNeedCtx) {
+                const highNeedData = [
+                    { name: 'Security Cameras', value: 419 },
+                    { name: 'Projectors', value: 375 },
+                    { name: 'Windows to Replace', value: 447 },
+                    { name: 'Screens 72"', value: 310 },
+                    { name: 'Student Toilets Restore', value: 198 }
+                ];
+                
+                new Chart(highNeedCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: highNeedData.map(item => item.name),
+                        datasets: [{
+                            data: highNeedData.map(item => item.value),
+                            backgroundColor: ['#e74c3c', '#3498db', '#f39c12', '#2ecc71', '#9b59b6'],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + ' needed';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Low Need Items Chart
+            const lowNeedCtx = document.getElementById('lowNeedChart');
+            if (lowNeedCtx) {
+                const lowNeedData = [
+                    { name: 'Computers', value: 85 },
+                    { name: 'Special Ed Rooms', value: 12 },
+                    { name: 'Admin Buildings', value: 15 },
+                    { name: 'Handrails', value: 18 },
+                    { name: 'Door Widening', value: 23 }
+                ];
+                
+                new Chart(lowNeedCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: lowNeedData.map(item => item.name),
+                        datasets: [{
+                            data: lowNeedData.map(item => item.value),
+                            backgroundColor: ['#95a5a6', '#34495e', '#7f8c8d', '#bdc3c7', '#ecf0f1'],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + ' needed';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Additional Needs Chart
+            const additionalNeedsCtx = document.getElementById('additionalNeedsChart');
+            if (additionalNeedsCtx) {
+                const additionalNeedsData = [
+                    { name: 'Sports & Recreation', value: 8, color: '#e74c3c' },
+                    { name: 'Classroom Infrastructure', value: 7, color: '#3498db' },
+                    { name: 'Water & Sanitation', value: 6, color: '#2ecc71' },
+                    { name: 'Building Maintenance', value: 5, color: '#f39c12' },
+                    { name: 'Technology & Equipment', value: 4, color: '#9b59b6' },
+                    { name: 'Safety & Security', value: 4, color: '#e67e22' },
+                    { name: 'Administration', value: 3, color: '#1abc9c' },
+                    { name: 'Outdoor Spaces', value: 3, color: '#34495e' }
+                ];
+                
+                new Chart(additionalNeedsCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: additionalNeedsData.map(item => item.name),
+                        datasets: [{
+                            data: additionalNeedsData.map(item => item.value),
+                            backgroundColor: additionalNeedsData.map(item => item.color),
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                            hoverBorderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '50%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return context.label + ': ' + context.parsed + ' mentions (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function displayCommuneCards() {
+            const container = document.getElementById('communeCards');
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+            
+            container.innerHTML = Object.keys(communesData).map((commune, index) => {
+                const data = communesData[commune];
+                return `
+                    <div class="district-card" style="background: linear-gradient(135deg, ${colors[index]}aa, ${colors[index]});">
+                        <div class="district-name">${commune}</div>
+                        <div class="district-stats">
+                            <div>Schools: ${data.schools}</div>
+                            <div>Students: ${data.students.toLocaleString()}</div>
+                            <div>Classrooms: ${data.classrooms}</div>
+                            <div>Projectors: ${data.projectors}</div>
+                            <div>Computers: ${data.computers}</div>
+                            <div>Avg/School: ${Math.round(data.students / data.schools)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('communeSelect').addEventListener('change', updateSchoolsList);
+            document.getElementById('schoolSelect').addEventListener('change', showSchoolDetails);
+            document.getElementById('categorySelect').addEventListener('change', showSchoolDetails);
+        }
+
+        function updateSchoolsList() {
+            const communeSelect = document.getElementById('communeSelect');
+            const schoolSelect = document.getElementById('schoolSelect');
+            const selectedCommune = communeSelect.value;
+            
+            schoolSelect.innerHTML = '<option value="">Choose a school</option>';
+            
+            if (selectedCommune && allSchoolsData[selectedCommune]) {
+                allSchoolsData[selectedCommune].forEach((school, index) => {
+                    const option = document.createElement('option');
+                    option.value = selectedCommune + '-' + index;
+                    option.textContent = school.name + ' (' + school.students + ' students)';
+                    schoolSelect.appendChild(option);
+                });
+            }
+            
+            document.getElementById('schoolDetails').innerHTML = '<p>Select a school to view detailed information</p>';
+        }
+
+        function showSchoolDetails() {
+            const schoolSelect = document.getElementById('schoolSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const schoolValue = schoolSelect.value;
+            const categoryValue = categorySelect.value;
+            
+            if (categoryValue && !schoolValue) {
+                displayCategoryStatistics(categoryValue);
+                return;
+            }
+            
+            if (!schoolValue) {
+                document.getElementById('schoolDetails').innerHTML = '<p>Select a school to view detailed information or a category to view statistics</p>';
+                return;
+            }
+            
+            const parts = schoolValue.split('-');
+            const commune = parts[0];
+            const index = parseInt(parts[1]);
+            const school = allSchoolsData[commune][index];
+            
+            if (categoryValue) {
+                displaySchoolInfo(school, commune, categoryValue);
+            } else {
+                displaySchoolInfo(school, commune);
+            }
+        }
+
+        function displayCategoryStatistics(category) {
+            const detailsContainer = document.getElementById('schoolDetails');
+            const categoryInfo = categoryData[category];
+            
+            if (!categoryInfo) {
+                detailsContainer.innerHTML = '<p>Category data not available</p>';
+                return;
+            }
+            
+            let html = `
+                <div class="school-info">
+                    <div class="school-header">
+                        <div class="school-name">${categoryInfo.title}</div>
+                        <div class="school-commune">Comprehensive analysis across all 58 schools and 5 communes</div>
+                    </div>
+                    <div class="needs-grid">
+            `;
+            
+            const entries = Object.entries(categoryInfo.data);
+            const itemsPerColumn = Math.ceil(entries.length / 2);
+            
+            for (let i = 0; i < entries.length; i += itemsPerColumn) {
+                html += '<div class="need-category"><h4>Statistics Overview</h4>';
+                
+                for (let j = i; j < Math.min(i + itemsPerColumn, entries.length); j++) {
+                    const [itemName, itemData] = entries[j];
+                    html += `
+                        <div class="need-item" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 12px; margin: 8px 0; border-left: 4px solid #3498db;">
+                            <strong>${itemName}</strong><br>
+                            ${itemData.total ? `<span style="color: #2c3e50;">Total: ${itemData.total.toLocaleString()}</span><br>` : ''}
+                            ${itemData.schools ? `<span style="color: #7f8c8d;">Schools: ${itemData.schools}</span><br>` : ''}
+                            ${itemData.average ? `<span style="color: #27ae60;">Average: ${itemData.average}</span><br>` : ''}
+                            ${itemData.max ? `<span style="color: #e74c3c;">Max: ${itemData.max}</span><br>` : ''}
+                            ${itemData.total_length ? `<span style="color: #2c3e50;">Total Length: ${itemData.total_length.toLocaleString()}m</span><br>` : ''}
+                            ${itemData.average_length ? `<span style="color: #27ae60;">Avg Length: ${itemData.average_length}m</span><br>` : ''}
+                            ${itemData.note ? `<span style="color: #8e44ad; font-style: italic;">${itemData.note}</span>` : ''}
+                        </div>
+                    `;
+                }
+                html += '</div>';
+            }
+            
+            html += `
+                <div class="need-category">
+                    <h4>Distribution by Commune</h4>
+                    ${Object.entries(categoryInfo.data).slice(0, 3).map(([itemName, itemData]) => `
+                        <div class="need-item" style="background: #fff; border: 1px solid #ddd;">
+                            <strong>${itemName}</strong><br>
+                            ${Object.entries(itemData.commune_breakdown || {}).map(([commune, count]) => 
+                                `<span style="display: inline-block; margin: 2px 8px 2px 0; padding: 2px 8px; background: #3498db; color: white; border-radius: 12px; font-size: 0.8em;">${commune}: ${count}</span>`
+                            ).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            html += '</div></div>';
+            detailsContainer.innerHTML = html;
+        }
+
+        function displaySchoolInfo(school, commune, filterCategory = null) {
+            const detailsContainer = document.getElementById('schoolDetails');
+            
+            const schoolData = detailedSchoolData[school.name] || {
+                infrastructure: { newClassrooms: 2, multifunction: 1, staffRoom: 1, adminBuilding: 0, wallLength: 0, preschoolRooms: 1 },
+                technology: { projectors: 6, screens: 6, cameras: 8, computers: 1, dvr: 1, dvrScreens: 1 },
+                accessibility: { wheelchairRamps: 1, accessibleToilets: 1, doorWidening: 0, handrails: 0, waterFountains: 1, specialEd: 0 },
+                maintenance: { studentToilets: 4, teacherToilets: 2, windows: 12, lighting: 6, externalPainting: 6, internalPainting: 6 },
+                equipment: { lockers: 1, shelves: 6, printers: 1, studentDesks: Math.floor(school.students/25), staffDesks: 3, chairs: 3, labEquipment: 0 }
+            };
+            
+            const categoryNeeds = {
+                infrastructure: [
+                    `New classrooms construction: ${schoolData.infrastructure.newClassrooms} needed`,
+                    `Multifunction room setup: ${schoolData.infrastructure.multifunction} needed`, 
+                    `Staff room establishment: ${schoolData.infrastructure.staffRoom} needed`,
+                    `Administration building: ${schoolData.infrastructure.adminBuilding} needed`,
+                    `Wall construction: ${schoolData.infrastructure.wallLength}m needed`,
+                    `Preschool room setup: ${schoolData.infrastructure.preschoolRooms} needed`
+                ],
+                technology: [
+                    `Projectors needed: ${schoolData.technology.projectors} units`,
+                    `72-inch screens needed: ${schoolData.technology.screens} units`, 
+                    `Security cameras needed: ${schoolData.technology.cameras} units`,
+                    `Computer equipment needed: ${schoolData.technology.computers} units`,
+                    `DVR systems needed: ${schoolData.technology.dvr} units`,
+                    `DVR screens needed: ${schoolData.technology.dvrScreens} units`
+                ],
+                accessibility: [
+                    `Wheelchair ramps needed: ${schoolData.accessibility.wheelchairRamps} units`,
+                    `Accessible toilets needed: ${schoolData.accessibility.accessibleToilets} units`,
+                    `Door widening needed: ${schoolData.accessibility.doorWidening} doors`, 
+                    `Handrails installation: ${schoolData.accessibility.handrails} sets`,
+                    `Accessible water fountains: ${schoolData.accessibility.waterFountains} units`,
+                    `Special education rooms: ${schoolData.accessibility.specialEd} needed`
+                ],
+                maintenance: [
+                    `Student toilets to restore: ${schoolData.maintenance.studentToilets} units`, 
+                    `Teacher toilets to restore: ${schoolData.maintenance.teacherToilets} units`,
+                    `Windows to replace: ${schoolData.maintenance.windows} units`,
+                    `LED lighting restoration: ${schoolData.maintenance.lighting} classrooms`,
+                    `External painting: ${schoolData.maintenance.externalPainting} classrooms`,
+                    `Internal painting: ${schoolData.maintenance.internalPainting} classrooms`
+                ],
+                equipment: [
+                    `Administration lockers: ${schoolData.equipment.lockers} sets needed`,
+                    `Shelves needed: ${schoolData.equipment.shelves} units`, 
+                    `Printers needed: ${schoolData.equipment.printers} units`,
+                    `Student desks needed: ${schoolData.equipment.studentDesks} units`,
+                    `Staff desks needed: ${schoolData.equipment.staffDesks} units`,
+                    `Staff chairs needed: ${schoolData.equipment.chairs} units`,
+                    `Lab equipment sets: ${schoolData.equipment.labEquipment} needed`
+                ]
+            };
+            
+            const totalNeeds = {
+                infrastructure: Object.values(schoolData.infrastructure).reduce((a, b) => a + b, 0),
+                technology: Object.values(schoolData.technology).reduce((a, b) => a + b, 0),
+                accessibility: Object.values(schoolData.accessibility).reduce((a, b) => a + b, 0),
+                maintenance: Object.values(schoolData.maintenance).reduce((a, b) => a + b, 0),
+                equipment: Object.values(schoolData.equipment).reduce((a, b) => a + b, 0)
+            };
+            
+            let html = `
+                <div class="school-info">
+                    <div class="school-header">
+                        <div class="school-name">${school.name}</div>
+                        <div class="school-commune">${commune} • ${school.students.toLocaleString()} students • ${school.classrooms || 'N/A'} classrooms</div>
+                        ${school.principal ? '<div class="school-commune">Principal: ' + school.principal + (school.phone ? ' • Phone: ' + school.phone : '') + '</div>' : ''}
+                    </div>
+                    <div class="needs-grid">
+            `;
+            
+            if (filterCategory) {
+                const categoryTitle = filterCategory.charAt(0).toUpperCase() + filterCategory.slice(1);
+                const needs = categoryNeeds[filterCategory] || [];
+                
+                html += `
+                    <div class="need-category" style="grid-column: 1 / -1;">
+                        <h4>${categoryTitle} Needs for ${school.name}</h4>
+                        <div style="background: linear-gradient(135deg, #e8f4fd, #d1ecf1); padding: 12px; margin: 8px 0; border-left: 4px solid #17a2b8; border-radius: 5px;">
+                            <strong>Total ${categoryTitle} Items: ${totalNeeds[filterCategory]} units</strong>
+                        </div>
+                        ${needs.map(need => `
+                            <div class="need-item" style="background: ${need.includes(': 0') ? '#fff3cd' : '#d4edda'}; border-left: 3px solid ${need.includes(': 0') ? '#ffc107' : '#28a745'};">
+                                ${need}
+                            </div>
+                        `).join('')}
+                        <div class="need-item" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-left: 4px solid #6c757d; font-style: italic;">
+                            Priority: ${totalNeeds[filterCategory] > 10 ? 'HIGH' : totalNeeds[filterCategory] > 5 ? 'MEDIUM' : 'LOW'} - Based on total items needed
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Show all categories with all items
+                Object.entries(categoryNeeds).forEach(([category, needs]) => {
+                    const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1);
+                    html += `
+                        <div class="need-category">
+                            <h4>${categoryTitle} (${totalNeeds[category]} total items)</h4>
+                            ${needs.map(need => `
+                                <div class="need-item" style="background: ${need.includes(': 0') ? '#fff3cd' : '#d4edda'}; border-left: 3px solid ${need.includes(': 0') ? '#ffc107' : '#28a745'};">
+                                    ${need}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div></div>';
+            detailsContainer.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

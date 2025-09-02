@@ -1,0 +1,25 @@
+{
+  "name": "School Infrastructure Dashboard",
+  "short_name": "School Dashboard",
+  "description": "Dashboard d'analyse des écoles de Chtouka Ait Baha",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#2c3e50",
+  "theme_color": "#3498db",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='90' fill='%233498db'/><text x='96' y='120' text-anchor='middle' fill='white' font-size='60'>🏫</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%233498db'/><text x='256' y='320' text-anchor='middle' fill='white' font-size='160'>🏫</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
